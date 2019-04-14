@@ -1,17 +1,19 @@
 from datetime import datetime
 from collections import OrderedDict
+from Stemmer import Stemmer
 
 
 class Parser:
     _string_counter = 0
     _histograms_per_day = {}
+    _stemmer = Stemmer("russian")
     MIN_WORD_LEN = 4
     READ_LINE_LIMIT = -1
-    TOP_WORDS_LENGTH = 10
+    TOP_WORDS_LENGTH = 20
     USUAL_TOP_WORDS = ['2018', 'порно', 'скачать', 'онлайн', 'купить', 'погода', 'смотреть', 'бесплатно', 'сайт',
                        'официальный', 'фильм', 'фото', 'секс', 'видео', 'одноклассники', 'фильмы', 'авито', 'можно',
                        'сколько', 'слушать', 'почта', 'хорошем', 'качестве', 'магазин', 'сериал', 'отзывы', 'личный',
-                       '2017']  # Found by top of all file
+                       '2017', 'торрент', 'телефон']  # Found by top of all file
 
     @staticmethod
     def parse_file(filename):
@@ -32,13 +34,14 @@ class Parser:
     def _count_word(word, dt):
         if len(word) < Parser.MIN_WORD_LEN or word in Parser.USUAL_TOP_WORDS:
             return
+        stem_word = Parser._stemmer.stemWord(word.lower())
         date = dt.date()
         if date not in Parser._histograms_per_day:
             Parser._histograms_per_day[date] = {}
-        if word not in Parser._histograms_per_day[date]:
-            Parser._histograms_per_day[date][word] = 1
+        if stem_word not in Parser._histograms_per_day[date]:
+            Parser._histograms_per_day[date][stem_word] = 1
         else:
-            Parser._histograms_per_day[date][word] += 1
+            Parser._histograms_per_day[date][stem_word] += 1
 
     @staticmethod
     def _parse_line(line):
